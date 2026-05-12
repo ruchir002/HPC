@@ -1,0 +1,78 @@
+#include<iostream>
+#include<omp.h>
+using namespace std;
+int main()
+{
+    int n;
+    cout << "Enter number of elements: ";
+    cin >> n;
+    // Input validation
+    if(n <= 0 || n > 100)
+    {
+        cout << "Invalid number of elements!";
+        return 0;
+    }
+    int a[100];
+    cout << "Enter elements:\n";
+    for(int i = 0; i < n; i++)
+    {
+        cin >> a[i];
+    }
+    // Safer variable names
+    int minimum = a[0];
+    int maximum = a[0];
+    int sum = 0;
+    float average;
+    // Parallel Reduction
+    #pragma omp parallel for reduction(min:minimum) reduction(max:maximum) reduction(+:sum)
+    for(int i = 0; i < n; i++)
+    {
+        if(a[i] < minimum)
+            minimum = a[i];
+        if(a[i] > maximum)
+            maximum = a[i];
+        sum += a[i];
+    }
+    average = (float)sum / n;
+    cout << "\nMinimum = " << minimum;
+    cout << "\nMaximum = " << maximum;
+    cout << "\nSum = " << sum;
+    cout << "\nAverage = " << average;
+    return 0;
+}
+ 
+HPC_4_vector_ADDITION
+#include <stdio.h>
+__global__ void vectorAdd(int *A, int *B, int *C, int n) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < n) {
+        C[i] = A[i] + B[i];
+    }
+}
+int main() {
+    int n = 1024;
+    int h_A[n], h_B[n], h_C[n];
+    // Initialize vectors
+    for (int i = 0; i < n; i++) {
+        h_A[i] = i;
+        h_B[i] = i * 2;
+    }
+    int *d_A, *d_B, *d_C;
+    cudaMalloc((void**)&d_A, n * sizeof(int));
+    cudaMalloc((void**)&d_B, n * sizeof(int));
+    cudaMalloc((void**)&d_C, n * sizeof(int));
+    cudaMemcpy(d_A, h_A, n * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_B, h_B, n * sizeof(int), cudaMemcpyHostToDevice);
+    int blockSize = 256;
+    int gridSize = (n + blockSize - 1) / blockSize;
+    vectorAdd<<<gridSize, blockSize>>>(d_A, d_B, d_C, n);
+    cudaMemcpy(h_C, d_C, n * sizeof(int), cudaMemcpyDeviceToHost);
+    printf("First 10 Results:\n");
+    for (int i = 0; i < 10; i++) {
+        printf("%d + %d = %d\n", h_A[i], h_B[i], h_C[i]);
+    }
+    cudaFree(d_A);
+    cudaFree(d_B);
+    cudaFree(d_C);
+    return 0;
+}
