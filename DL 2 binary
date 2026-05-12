@@ -1,0 +1,105 @@
+1.	import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from keras.datasets import imdb
+2.	(X_train, y_train), (X_test, y_test) = imdb.load_data
+(num_words=2000)
+3.	data = np.concatenate((X_train, X_test), axis=0)
+label = np.concatenate((y_train, y_test), axis=0)
+4.	X_train.shape
+X_test.shape
+y_train.shape
+y_test.shape
+5.	print("Review is ",X_train[0])
+print("Review is ",y_train[0])
+6.	vocab = imdb.get_word_index()
+print(vocab)
+7.	print("Categories:", np.unique(label))
+print("Number of unique words:", len(np.unique(
+    np.hstack(data))))
+8.	length = [len(i) for i in data]
+print("Average Review length:", np.mean(length))
+print("Standard Deviation:", round(np.std(length)))
+9.	print("Label:", label[0])
+print("Label:", label[1])
+10.	print(data[0])
+11.	index = imdb.get_word_index()
+reverse_index = dict([(value, key) for (key, value) 
+                  	    in index.items()])
+decoded = " ".join([reverse_index.get(i - 3, "#") 
+                                                                      for i in data[0]])
+print(decoded)
+12.	def vectorize(sequences, dimension = 2000):
+    results = np.zeros((len(sequences), dimension),
+ dtype=np.float32)
+    for i, sequence in enumerate(sequences):
+        results[i, sequence] = 1
+    return results
+13.	data = vectorize(data)
+14.	label = np.array(label).astype("float32")
+15.	import seaborn as sns
+labelDF = pd.DataFrame({'label': label})
+sns.countplot(x='label', data=labelDF)
+16.	from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(
+data,
+label,
+test_size=0.20,
+random_state=1
+)
+17.	X_train.shape
+X_test.shape
+18.	from keras.utils import to_categorical
+from keras import models
+from keras import layers
+19.	model = models.Sequential()
+20.	model.add(layers.Dense(50, activation = "relu", 
+input_shape=(2000, )))
+model.add(layers.Dropout(0.3, noise_shape=None, 
+seed=None))
+model.add(layers.Dense(50, activation = "relu"))
+model.add(layers.Dropout(0.2, noise_shape=None, 
+        seed=None))
+model.add(layers.Dense(50, activation = "relu"))
+model.add(layers.Dense(1, activation = "sigmoid"))
+21.	model.summary()
+22.	import tensorflow as tf
+callback = tf.keras.callbacks.EarlyStopping(
+monitor='loss',
+patience=3
+)
+23.	model.compile(
+optimizer = "adam",
+loss = "binary_crossentropy",
+metrics = ["accuracy"]
+)
+24.	results = model.fit(
+X_train,
+y_train,
+epochs=2,
+batch_size=500,
+validation_data=(X_test, y_test),
+callbacks=[callback]
+)
+25.	print(np.mean(results.history["val_accuracy"]))
+26.	score = model.evaluate(X_test, y_test, batch_size=500)
+print('Test loss:', score[0])
+print('Test accuracy:', score[1])
+27.	print(results.history.keys())
+28.	import matplotlib.pyplot as plt
+plt.plot(results.history['accuracy'])
+plt.plot(results.history['val_accuracy'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+29.	plt.plot(results.history['loss'])
+plt.plot(results.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+
+(jith 2000 ahe thit 5k , 10k gheu shakto)
